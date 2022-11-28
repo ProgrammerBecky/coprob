@@ -19,6 +19,7 @@ html, body{
     border-right: 1px solid black;
     border-bottom: 1px solid black;
     border-bottom-right-radius: 0.5rem;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.5);
 }
 #Editor ul {
     margin: 0 0 0 1.5rem;
@@ -26,6 +27,9 @@ html, body{
 }
 #Editor li {
     list-style-type: square;
+}
+#Editor small {
+    color: rgba(0,0,0,0.7);
 }
 #Editor li.hasChildren {
     cursor: pointer;
@@ -40,4 +44,12 @@ html, body{
 }
 #Editor li.hasChildren.open > ul {
     display: block;
+}
+#Editor li.graphSelected {
+    color: darkorange;
+    font-weight: bold;
+}
+#Editor li.graphSelected > * {
+    color: black;
+    font-weight: normal;
 }

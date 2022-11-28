@@ -14,9 +14,16 @@ export const getSceneGraph = (parent) => {
             }
         }
         
+        let name = '';
+        if( child.geometry ) {
+            name = '🔳 ';
+        }
+        name += child.name ? child.name : '';
+        name += `<small> ${child.type}</small>`;
+        
         graph.push({
             uuid: child.uuid,
-            name: child.name ? child.name : `&lt;noname&gt; ${child.type}` ,
+            name,
             material,
             children: child.children.length > 0 ? getSceneGraph( child ) : false,
         });
