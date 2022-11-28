@@ -9,7 +9,7 @@ import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader
 import { FBXLoader } from './node_modules/three/examples/jsm/loaders/FBXLoader.js';
 import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { init3d } from './src/worker/init3d.js';
-//import { resize } from './src/worker/resize.js';
+import { resize } from './src/worker/resize.js';
 
 ImageLoader.prototype.load = function ( url, onLoad, onProgress, onError ) {
 
