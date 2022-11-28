@@ -1,10 +1,7 @@
-import { G } from './../../G.js';
-
 export const getSceneGraph = (parent) => {
     
     let graph = [];
 
-    if( ! parent ) parent = G.scene;
     parent.children.map( child => {
         
         let material;
