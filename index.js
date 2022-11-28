@@ -1,10 +1,8 @@
-import Stats from '/node_modules/three/examples/jsm/libs/stats.module.js'
-
 const canvas = document.createElement( 'canvas' );
 canvas.classList.add( 'threeD' );
 document.body.appendChild( canvas );
 
-let offscreen = canvas.transferControlToOffscreen();
+const offscreenCanvas = canvas.transferControlToOffscreen();
 
 const threeD = new Worker(
     '3d.js',
@@ -20,29 +18,24 @@ threeD.addEventListener( 'message' , e => {
 });
 threeD.postMessage({
     type: 'init',
-    canvas: offscreen,
+    canvas: offscreenCanvas,
     width: canvas.clientWidth,
     height: canvas.clientHeight,
     pixelRatio: window.devicePixelRatio,
-} , [ offscreen ]);
+} , [ offscreenCanvas ]);
 
-/*
+/* Setup Stats */
+const stats = document.createElement( 'canvas' );
+document.body.appendChild( stats );
+const offscreenStats = stats.transferControlToOffscreen();
 
-        window.addEventListener( 'resize' , () => {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            
-            G.camera.aspect = width / height;
-            G.camera.updateProjectionMatrix();
-            
-            G.renderer.setSize( width , height );
-        });
-        */
-
-/*
-let stats;
-    stats = Stats();
-    document.body.appendChild( stats.dom );
-
-    stats.begin();
-*/
+window.addEventListener( 'resize' , () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    threeD.postMessage({
+        type: 'resize',
+        width,
+        height,
+    });
+});
