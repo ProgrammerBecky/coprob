@@ -28,11 +28,6 @@ threeD.postMessage({
     pixelRatio: window.devicePixelRatio,
 } , [ offscreenCanvas ]);
 
-/* Setup Stats */
-const stats = document.createElement( 'canvas' );
-document.body.appendChild( stats );
-const offscreenStats = stats.transferControlToOffscreen();
-
 window.addEventListener( 'resize' , () => {
     const width = window.innerWidth;
     const height = window.innerHeight;
