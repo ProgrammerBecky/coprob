@@ -57,14 +57,17 @@ export const init3d = (e) => {
     G.renderer.setSize( e.data.width , e.data.height );
 
     G.camera = new PerspectiveCamera( 60, e.data.width / e.data.height , 1 , 50000 );
+    G.camera.name = 'Camera';
     G.scene.add( G.camera );
 
     G.scene.background = new Color( 0x081215 );
 
     G.ambient = new AmbientLight( 0x222222 );
+    G.ambient.name = 'Ambient Light';
     G.scene.add( G.ambient );
 
     G.sun = new DirectionalLight( 0xffffff , 2 );
+    G.sun.name = 'Sun Light';
     G.sun.castShadow = true;
     //G.sun.shadow.bias = 0.0002;
     G.sun.shadow.normalBias = 7;
@@ -78,11 +81,13 @@ export const init3d = (e) => {
     G.sun.shadow.camera.bottom = -1024 * 7;
    
     G.scene.add( G.sun );
+    G.sun.target.name = 'Sun Light Target';
     G.scene.add( G.sun.target );
     
     G.clock = new Clock();
 
     G.fbx.load( '/3d/buildings/BB-001.fbx' , result => {
+        result.name = 'BB-001 Parent';
         result.position.set( 0,0,100 );
         G.camera.lookAt( 0,0,100 );
         G.scene.add( result );
