@@ -56,10 +56,9 @@ export const init3d = (e) => {
     G.renderer.setPixelRatio( e.data.devicePixelRatio );
     G.renderer.setSize( e.data.width , e.data.height );
 
-    G.camera = new PerspectiveCamera( 60, e.data.width / e.data.height , 1 , 1024*7 );
+    G.camera = new PerspectiveCamera( 60, e.data.width / e.data.height , 1 , 50000 );
     G.scene.add( G.camera );
 
-    
     G.scene.background = new Color( 0x081215 );
 
     G.ambient = new AmbientLight( 0x222222 );
@@ -82,6 +81,12 @@ export const init3d = (e) => {
     G.scene.add( G.sun.target );
     
     G.clock = new Clock();
+
+    G.fbx.load( '/3d/buildings/BB-001.fbx' , result => {
+        result.position.set( 0,0,100 );
+        G.camera.lookAt( 0,0,100 );
+        G.scene.add( result );
+    });
 
     animate();
     

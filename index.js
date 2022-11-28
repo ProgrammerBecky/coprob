@@ -1,3 +1,5 @@
+import { buildSceneGraph } from './src/main/editor/buildSceneGraph.js';
+
 const canvas = document.createElement( 'canvas' );
 canvas.classList.add( 'threeD' );
 document.body.appendChild( canvas );
@@ -14,7 +16,9 @@ threeD.onerror = (e) => {
     console.error( e );
 }
 threeD.addEventListener( 'message' , e => {
-    console.log( e.data );
+    if( e.data.type === 'sceneGraph' ) {
+        buildSceneGraph( e );
+    }
 });
 threeD.postMessage({
     type: 'init',
@@ -39,3 +43,14 @@ window.addEventListener( 'resize' , () => {
         height,
     });
 });
+
+const editor = document.getElementById('EditMode');
+if( editor ) {
+    editor.addEventListener( 'click' , () => {
+        document.getElementById('Editor').removeChild( editor );
+        threeD.postMessage({
+            type: 'editor',
+            set: 1,
+        });
+    });
+}

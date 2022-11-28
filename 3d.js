@@ -10,6 +10,7 @@ import { FBXLoader } from './node_modules/three/examples/jsm/loaders/FBXLoader.j
 import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { init3d } from './src/worker/init3d.js';
 import { resize } from './src/worker/resize.js';
+import { editor } from './src/worker/editor/editor.js';
 
 ImageLoader.prototype.load = function ( url, onLoad, onProgress, onError ) {
 
@@ -49,6 +50,9 @@ try {
         }
         else if( e.data.type === 'resize' ) {
             resize( e );
+        }
+        else if( e.data.type === 'editor' ) {
+            editor( e );
         }
     }
 
