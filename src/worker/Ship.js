@@ -5,6 +5,7 @@ import {
     Vector2,
     Color,
     DoubleSide,
+    CanvasTexture,
 } from 'three';
 
 const emissive = new Color(1,1,1);
@@ -33,6 +34,7 @@ export class Ship {
         this.setControls = Object.assign( {} , this.controls );
             
     }
+    
     loadMesh( component , filename ) {
         G.fbx.load( filename , result => {
 
@@ -253,10 +255,10 @@ export class Ship {
                 glass: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/DrakeClassFighter/DrakeClassFighterCanopy.fbx',
                 //seat: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterExampleCockpit2Grouped.fbx',
                 cockpit: {
-                    seat: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitEjectionSeat1.fbx',
-                    seatBack: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitBack2.fbx',
-                    console: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitConsole3.fbx',
-                    hud: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitHUD2.fbx',
+                    seat: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitEjectionSeat2.fbx',
+                    seatBack: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitBack3.fbx',
+                    console: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitConsole1.fbx',
+                    hud: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitHUD1.fbx',
                     
                     /* Centre Console 3 */
                     //floorConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitMiddleConsole3.fbx',
@@ -273,12 +275,12 @@ export class Ship {
                     //freeStick: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick1Large.fbx',
 
                     stickBase: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickConsole.fbx',
-                    freeStick: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick2Large.fbx',
+                    freeStick: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick3Large.fbx',
                     
                     rudderLeft: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitPedalLeft.fbx',
                     rudderRight: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitPedalRight.fbx',
 
-                    /* Side Console 1 *
+                    /* Side Console 1 */
                     leftConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide1Left.fbx',
                     rightConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide1Right.fbx',
                     thrustControl: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterThrusterControl3.fbx',
@@ -287,7 +289,7 @@ export class Ship {
                     thrustStickBase: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickBase.fbx',
                     //*/
                     
-                    /* Side Console's 2+3 */
+                    /* Side Console's 2+3 *
                     leftConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide3Left.fbx',
                     rightConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide3Right.fbx',                    
                     thrustLever: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterThrusterControl1.fbx',
@@ -316,6 +318,7 @@ export class Ship {
         map.wrapS = map.wrapT = RepeatWrapping;
         return map;
     }
+    
     getShipMaterials() {
         if( ! G.materials ) {
             G.materials = {};
@@ -352,6 +355,7 @@ export class Ship {
         if( ! G.materials.Drake ) {
             
             let map = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/Albedo/DrakeClassFighterBlueAlbedo.png' );
+            map.name = 'DrakeAlbedo';
             let metRough = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/DrakeMetRough.png' );
             let normal = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/DrakeClassFighterNormal.png' );
             let aoMap = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/DrakeClassFighterAO.png' );
@@ -370,6 +374,28 @@ export class Ship {
                 emissiveMap: emissiveMap,
             });
         }
+    }
+
+    setCustomPaint(e) {
+        
+        let canvas = e.data.canvas;
+        canvas.width = 4096;
+        canvas.height = 4096;
+        const context = canvas.getContext('2d');
+        context.putImageData( e.data.texture , 0,0 );
+        
+        const texture = new CanvasTexture( canvas );
+        texture.name = 'DrakeAlbedo';
+        
+        this.ent.traverse( child => {
+            if( child.isMesh && child.material && child.material.map ) {
+                if( child.material.map.name === 'DrakeAlbedo' ) {
+                    child.material.map = texture;
+                }
+            }
+        });
+
+        console.log( e );
     }
     
     update() {

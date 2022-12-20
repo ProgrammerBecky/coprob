@@ -5,12 +5,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="CopRob" />
         <title>CopRob</title>
-        <link href="style.css" rel="stylesheet">        
+        <link href="style.css" rel="stylesheet">                
     </head>
     <body>
         <div id='Debug' style='position:absolute;top:0;left:0;z-index:9999;color:white'></div>
         <script type="module" src="/index.js"></script>
+        
+        <!-- FOR CONSOLE ERRORS -->
         <script type="module" src="/3d.js"></script>
+        <script type="module" src="/texture.js"></script>
+        <!-- END FOR CONSOLE ERRORS -->
+        
+        <form id='CustomShip'>
+            <select name='BaseColour'>
+                <option>Red</option>
+                <option>Yellow</option>
+                <option>Green</option>
+                <option>Blue</option>
+                <option>White</option>
+            </select>
+            <input name='Colour1' type='color'/>
+            <input name='Colour2' type='color'/>
+            <input name='Colour3' type='color'/>
+            <input name='Colour4' type='color'/>
+            <input name='Colour5' type='color'/>
+            <button>
+                Paint Ship
+            </button>
+        </form>
         <div id='Editor'>
             <button id='EditMode'>Edit</button>
         </div>

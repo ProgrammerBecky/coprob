@@ -6,6 +6,105 @@ document.body.appendChild( canvas );
 
 const offscreenCanvas = canvas.transferControlToOffscreen();
 
+const sendCanvas = () => {
+    const newCanvas = document.createElement( 'canvas' );
+    const newOffscreen = newCanvas.transferControlToOffscreen();
+    threeD.postMessage({
+        type: 'canvas',
+        canvas: newOffscreen,
+    }, [ newOffscreen ]);
+}
+document.getElementById('CustomShip').addEventListener( 'submit' , (e) => {
+    e.preventDefault();
+
+    const form = new FormData( document.getElementById('CustomShip') );
+    let custom = {};
+    for( const pair of form.entries() ) {
+        custom[ pair[0] ] = pair[1];
+    }
+    
+    let mask = new Image();
+    mask.onload = () => {
+        
+        const imageCanvas = document.createElement( 'canvas' );
+        imageCanvas.width = 4096;
+        imageCanvas.height = 4096;        
+        const context = imageCanvas.getContext('2d');
+        context.drawImage( mask , 0 , 0 );
+        const pixels = context.getImageData(0,0,4096,4096,{
+            colorSpace: 'srgb',
+        });
+        
+        let base = new Image();
+        base.onload = () => {
+
+            const baseCanvas = document.createElement( 'canvas' );
+            baseCanvas.width = 4096;
+            baseCanvas.height = 4096;
+            const baseContext = baseCanvas.getContext( '2d' );
+            baseContext.drawImage( base , 0 , 0 );
+            const basePixels = baseContext.getImageData(0,0,4096,4096,{
+               colorSpace: 'srgb', 
+            });
+        
+            let overlay = new Image();
+            overlay.onload = () => {
+
+                const overlayCanvas = document.createElement( 'canvas' );
+                overlayCanvas.width = 4096;
+                overlayCanvas.height = 4096;
+                const overlayContext = overlayCanvas.getContext( '2d' );
+                overlayContext.drawImage( overlay , 0 , 0 );
+                const overlayPixels = overlayContext.getImageData(0,0,4096,4096,{
+                   colorSpace: 'srgb', 
+                });
+
+                texture.postMessage({
+                    type: 'buildTexture',
+                    name: 'DrakeAlbedo',
+                    paint: custom,
+                    mask: pixels,
+                    base: basePixels,
+                    overlay: overlayPixels,
+                });        
+                
+            }
+            overlay.src = '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/Overlay.png';
+            
+        }
+        
+        //base.src = `3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/Albedo/DrakeClassFighter${custom.BaseColour}Albedo.png`;
+        base.src = '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/DrakeClassFighterGloss.png';
+    }
+    mask.src = '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/Colour.png';
+    
+});
+
+const texture = new Worker(
+    'texture.js',
+    {
+        type: 'module'
+    },
+);
+texture.addEventListener( 'message' , e => {
+    const newCanvas = document.createElement( 'canvas' );
+    newCanvas.style.position = 'absolute';
+    newCanvas.style.top = 0
+    newCanvas.style.left = 0;
+    newCanvas.style.zIndex = 10;
+    newCanvas.style.transform = 'scale(0.25)';
+    document.body.appendChild( newCanvas );
+    
+    const newOffscreen = newCanvas.transferControlToOffscreen();
+    
+    threeD.postMessage({
+        type: 'texture',
+        name: e.data.name,
+        texture: e.data.texture,
+        canvas: newOffscreen,
+    },[newOffscreen]);
+});
+
 const threeD = new Worker(
     '3d.js',
     {
@@ -18,6 +117,9 @@ threeD.onerror = (e) => {
 threeD.addEventListener( 'message' , e => {
     if( e.data.type === 'sceneGraph' ) {
         buildSceneGraph( e );
+    }
+    else if( e.data.type === 'canvas' ) {
+        sendCanvas();
     }
 });
 threeD.postMessage({

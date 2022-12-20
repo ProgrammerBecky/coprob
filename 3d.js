@@ -38,6 +38,7 @@ G.texture = new TextureLoader( G.manager );
 G.gltf = new GLTFLoader( G.manager );
 G.fbx = new FBXLoader( G.manager );
 G.mouse = new Vector2(0,0);
+G.canvas = false;
 
 /* N8's SSAO
 https://github.com/N8python/randomPhysics
@@ -46,6 +47,9 @@ https://github.com/N8python/randomPhysics
 try {
 
     onmessage = (e) => {
+        if( e.data.type === 'canvas' ) {
+            G.canvas = e.data.canvas;
+        }
         if( e.data.type === 'init' ) {
             init3d( e );
         }
@@ -63,6 +67,9 @@ try {
         }
         else if( e.data.type === 'controls' ) {
             G.ships[0].controls = e.data.controls;
+        }
+        else if( e.data.type === 'texture' ) {
+            G.ships[0].setCustomPaint( e );
         }
     }
 
