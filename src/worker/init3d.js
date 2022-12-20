@@ -18,6 +18,7 @@ import {
     Vector3,
 } from 'three';
 import { animate } from './animate.js';
+import { Ship } from './Ship.js';
 
 export const init3d = (e) => {
 
@@ -26,7 +27,6 @@ export const init3d = (e) => {
     
     G.scene = new Scene();
 
-/*
     const cubeTextureLoader = new CubeTextureLoader();
     cubeTextureLoader.setPath( '3d/high/skybox/' );
     G.environmentMap = cubeTextureLoader.load([
@@ -42,7 +42,6 @@ export const init3d = (e) => {
     G.environmentMap.magFilter = LinearFilter;
     G.environmentMap.minFilter = LinearMipMapLinearFilter;
     G.environmentMap.encoding = sRGBEncoding;
-*/
 
     G.renderer = new WebGLRenderer({
         canvas: e.data.canvas,
@@ -56,7 +55,10 @@ export const init3d = (e) => {
     G.renderer.setPixelRatio( e.data.devicePixelRatio );
     G.renderer.setSize( e.data.width , e.data.height );
 
-    G.camera = new PerspectiveCamera( 60, e.data.width / e.data.height , 1 , 50000 );
+    G.viewWidth = e.data.width;
+    G.viewHeight = e.data.height;
+    
+    G.camera = new PerspectiveCamera( 60, e.data.width / e.data.height , 1 , 500000 );
     G.camera.name = 'Camera';
     G.scene.add( G.camera );
 
@@ -86,13 +88,9 @@ export const init3d = (e) => {
     
     G.clock = new Clock();
 
-    G.fbx.load( '/3d/buildings/BB-001.fbx' , result => {
-        result.name = 'BB-001 Parent';
-        result.position.set( 0,0,100 );
-        G.camera.lookAt( 0,0,100 );
-        G.scene.add( result );
-    });
-
+    G.ships = [
+        new Ship( 'Drake' )
+    ];
     animate();
     
 }
