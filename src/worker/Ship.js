@@ -3,6 +3,7 @@ import {
     MeshStandardMaterial,
     RepeatWrapping,
     Vector2,
+    Vector3,
     Color,
     DoubleSide,
     CanvasTexture,
@@ -15,12 +16,28 @@ export class Ship {
     constructor( shipType ) {
         
         this.update = this.update.bind( this );
-        this.shipType = shipType;
         
+        this.setType( shipType );
+        this.momentum = new Vector3();
+        
+    }
+    
+    destroy() {
+        this.joystick = false;
+        this.canopy = false;
+        this.thrustStick = false;
+        this.rudderRight = false;
+        this.rudderLeft = false;
+        this.throttle = false;
+        G.scene.remove( this.ent );
+        this.ent = false;
+    }
+    setType( shipType ) {
+        this.shipType = shipType;
         this.meshes = this.getShipMeshes();
         this.getShipMaterials();
-        this.loadMesh( 'hull' , this.meshes.hull );
-        
+        this.loadMesh( 'hull' , this.meshes.hull , this.meshes.hullScale );
+
         this.canopyOpen = 0;
         this.canopyAngle = 0;
         this.controls = {
@@ -32,11 +49,14 @@ export class Ship {
             slideVertical: 0,
         }
         this.setControls = Object.assign( {} , this.controls );
-            
     }
     
-    loadMesh( component , filename ) {
+    loadMesh( component , filename , scale ) {
         G.fbx.load( filename , result => {
+
+            if( scale ) {
+                result.scale.set( scale , scale , scale );
+            }
 
             if( component === 'hull' ) {
                 this.ent = result;
@@ -44,12 +64,16 @@ export class Ship {
                 result.position.set( 0,0,0 );
                 G.scene.add( result );
                 
-                this.applyMaterial( result , G.materials.Drake );
-                this.loadMesh( 'canopy', this.meshes.canopy );
+                this.applyMaterial( result , G.materials[this.shipType] );
+                this.findFixedPoints( scale );
+
+                if( this.meshes.canopy ) {
+                    this.loadMesh( 'canopy', this.meshes.canopy );
+                }
             }
             else if( component === 'canopy' ) {
                 this.canopy = result;
-                result.position.set( 0, 13000, -3000 );
+                result.position.set( 0, 13000, -3300 );
                 result.rotation.set( 0 , 0 , 0 ); // - Math.PI/2
                 this.ent.add( result );
                 
@@ -245,57 +269,117 @@ export class Ship {
             }
 
         });
+        
+    }
+    
+    findFixedPoints( scale ) {
+        this.ent.traverse( child => {
+            if( child.isBone && child.name.indexOf( 'FixedPoint' ) > -1 ) {
+                this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterModularWeapons/ScifiFighterBarrel1.fbx' , child , scale );
+
+                const newChild = child.clone();
+                newChild.position.set( - child.position.x , child.position.y , child.position.z );
+                child.parent.add( newChild );
+                this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterModularWeapons/ScifiFighterBarrel1.fbx' , newChild , scale );
+            }
+        });
+    }
+    addFixedPointWeapon( filename ,  mount , scale ) {
+        G.fbx.load( filename , result => {
+            result.scale.set( 50000/scale , 50000/scale , 50000/scale );
+            console.log( 'adding weapon' , result );
+            this.applyMaterial( result , G.materials.FighterWeapons );
+            mount.add( result );
+        });
     }
     
     getShipMeshes() {
-        if( this.shipType === 'Drake' ) {
+        if( this.shipType === 'Hellcat' ) {
             return {
-                hull: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/DrakeClassFighter/DrakeClassFighterHull.fbx',
-                canopy: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/DrakeClassFighter/DrakeClassFighterCanopyFrame.fbx',
-                glass: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/DrakeClassFighter/DrakeClassFighterCanopy.fbx',
-                //seat: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterExampleCockpit2Grouped.fbx',
+              hull: '3d/ships/MeshesFBX/HellcatClassFighter/ScifiFighterHellcatHull.fbx',
+              hullScale: 50000,
+            };
+        }
+        else if( this.shipType === 'Excalibur' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/ExcaliburClassFighter/ScifiFighterExcaliburHull.fbx',
+              hullScale: 50000,
+            };
+        }
+        else if( this.shipType === 'Devastator' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/DevastatorClassFighter/ScifiFighterDevastatorHull.fbx',
+              hullScale: 50000,
+            };
+        }
+        else if( this.shipType === 'Arrow' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/ArrowClassFighter/ScifiFighterArrowHull.fbx',
+              hullScale: 50000,
+            };
+        }
+        else if( this.shipType === 'Paladin' ) {
+            return {
+                hull: '3d/ships/MeshesFBX/PaladinClassFrigate/PaladinClassFrigateHull.fbx',
+                hullScale: 20,
+            }
+        }
+        else if( this.shipType === 'Hellion' ) {
+            return {
+                hull: '3d/ships/MeshesFBX/HellionClassFrigate/HellionClassFrigateHull.fbx',
+                hullScale: 20,
+            }
+        }
+        else if( this.shipType === 'Drake' ) {
+            return {
+                hull: '3d/ships/MeshesFBX/DrakeClassFighter/DrakeClassFighterHull.fbx',
+                fixedPoints: true,
+                hullScale: 1,
+                canopy: '3d/ships/MeshesFBX/DrakeClassFighter/DrakeClassFighterCanopyFrame.fbx',
+                glass: '3d/ships/MeshesFBX/DrakeClassFighter/DrakeClassFighterCanopy.fbx',
+                //seat: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterExampleCockpit2Grouped.fbx',
                 cockpit: {
-                    seat: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitEjectionSeat2.fbx',
-                    seatBack: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitBack3.fbx',
-                    console: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitConsole1.fbx',
-                    hud: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitHUD1.fbx',
+                    seat: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitEjectionSeat2.fbx',
+                    seatBack: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitBack3.fbx',
+                    console: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitConsole1.fbx',
+                    hud: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitHUD1.fbx',
                     
                     /* Centre Console 3 */
-                    //floorConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitMiddleConsole3.fbx',
-                    //floorJoyStick: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick1Large.fbx',
+                    //floorConsole: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitMiddleConsole3.fbx',
+                    //floorJoyStick: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick1Large.fbx',
                     
                     /* Centre Console 1 */
-                    //lowerConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitMiddleConsole1.fbx',
-                    //stickBase: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickConsole.fbx',
-                    //freeStick: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick1Large.fbx',
+                    //lowerConsole: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitMiddleConsole1.fbx',
+                    //stickBase: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickConsole.fbx',
+                    //freeStick: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick1Large.fbx',
 
                     /* Centre Console 2 */
-                    //lowerConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitMiddleConsole2.fbx',
-                    //stickBase: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickConsole.fbx',
-                    //freeStick: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick1Large.fbx',
+                    //lowerConsole: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitMiddleConsole2.fbx',
+                    //stickBase: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickConsole.fbx',
+                    //freeStick: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick1Large.fbx',
 
-                    stickBase: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickConsole.fbx',
-                    freeStick: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick3Large.fbx',
+                    stickBase: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickConsole.fbx',
+                    freeStick: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick3Large.fbx',
                     
-                    rudderLeft: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitPedalLeft.fbx',
-                    rudderRight: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitPedalRight.fbx',
+                    rudderLeft: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitPedalLeft.fbx',
+                    rudderRight: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitPedalRight.fbx',
 
                     /* Side Console 1 */
-                    leftConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide1Left.fbx',
-                    rightConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide1Right.fbx',
-                    thrustControl: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterThrusterControl3.fbx',
-                    thrustControlBase: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterThrusterControlBase.fbx',
-                    thrustStick: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick2Small.fbx',
-                    thrustStickBase: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickBase.fbx',
+                    leftConsole: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide1Left.fbx',
+                    rightConsole: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide1Right.fbx',
+                    thrustControl: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterThrusterControl3.fbx',
+                    thrustControlBase: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterThrusterControlBase.fbx',
+                    thrustStick: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick2Small.fbx',
+                    thrustStickBase: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickBase.fbx',
                     //*/
                     
                     /* Side Console's 2+3 *
-                    leftConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide3Left.fbx',
-                    rightConsole: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide3Right.fbx',                    
-                    thrustLever: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterThrusterControl1.fbx',
-                    thrustBase: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterThrusterControlBase.fbx',
-                    thrustHiStick: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick3Small.fbx',
-                    thrustHiStickBase: '3d/DrakeClassFighterFBX+OBJ/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickBase.fbx',
+                    leftConsole: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide3Left.fbx',
+                    rightConsole: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitSide3Right.fbx',                    
+                    thrustLever: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterThrusterControl1.fbx',
+                    thrustBase: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterThrusterControlBase.fbx',
+                    thrustHiStick: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystick3Small.fbx',
+                    thrustHiStickBase: '3d/ships/MeshesFBX/ScifiFighterCockpit/ScifiFighterCockpitJoystickBase.fbx',
                     //*/
                 },
             };
@@ -309,7 +393,13 @@ export class Ship {
                     uv.array[ 1 + i * uv.itemSize ] = 1 - uv.array[ 1 + i * uv.itemSize ];
                 }
                 child.geometry.setAttribute( 'uv' , uv );
+                child.material.dispose();
                 child.material = material;
+                
+                if( ! child.material.transparent ) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;                    
+                }
             }
         });
     }
@@ -335,11 +425,121 @@ export class Ship {
                 side: DoubleSide,
             });            
         }
+        if( ! G.materials.FighterWeapons ) {
+            let map = this.loadTexture( '3d/ships/Textures/ScifiFighterModularWeapons/ScifiFighterModularWeaponsAlbedo.png' );
+            let metRough = this.loadTexture( '3d/ships/Textures/ScifiFighterModularWeapons/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/ScifiFighterModularWeapons/ScifiFighterModularWeaponsNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/ScifiFighterModularWeapons/ScifiFighterModularWeaponsAlbedoAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/ScifiFighterModularWeapons/ScifiFighterModularWeaponsIllumination.png' );
+            
+            G.materials.FighterWeapons = new MeshStandardMaterial({
+                name: 'Weapons',
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });                          
+        }
+
+        if( ! G.materials.Hellcat && this.shipType === 'Hellcat' ) {
+            
+            let map = this.loadTexture( '3d/ships/Textures/HellcatClassFighter/Albedo/ScifiFighterHellcatBlueAlbedo.png' );
+            map.name = 'HellcatAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/HellcatClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/HellcatClassFighter/ScifiFighterHellcatNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/HellcatClassFighter/ScifiFighterHellcatAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/HellcatClassFighter/ScifiFighterHellcatIllumination.png' );
+            
+            G.materials.Hellcat = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });
+        } 
+        if( ! G.materials.Excalibur && this.shipType === 'Excalibur' ) {
+            
+            let map = this.loadTexture( '3d/ships/Textures/ExcaliburClassFighter/Albedo/ScifiFighterExcaliburBlueAlbedo.png' );
+            map.name = 'ExcaliburAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/ExcaliburClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/ExcaliburClassFighter/ScifiFighterExcaliburNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/ExcaliburClassFighter/ScifiFighterExcaliburAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/ExcaliburClassFighter/ScifiFighterExcaliburIllumination.png' );
+            
+            G.materials.Excalibur = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });
+        } 
+        if( ! G.materials.Devastator && this.shipType === 'Devastator' ) {
+            
+            let map = this.loadTexture( '3d/ships/Textures/DevastatorClassFighter/Albedo/ScifiFighterDevastatorBlueAlbedo.png' );
+            map.name = 'DevastatorAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/DevastatorClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/DevastatorClassFighter/ScifiFighterDevastatorNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/DevastatorClassFighter/ScifiFighterDevastatorAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/DevastatorClassFighter/ScifiFighterDevastatorIllumination.png' );
+            
+            G.materials.Devastator = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });
+        }        
+        if( ! G.materials.Arrow && this.shipType === 'Arrow' ) {
+            let map = this.loadTexture( '3d/ships/Textures/PaladinClassFrigate/Albedo/ScifiFighterArrowBlueAlbedo.png' );
+            map.name = 'ArrowAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/ArrowClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/ArrowClassFighter/ScifiFighterArrowNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/ArrowClassFighter/ScifiFighterArrowAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/ArrowClassFighter/ScifiFighterArrowIllumination.png' );
+            
+            G.materials.Arrow = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });              
+        }
         if( ! G.materials.Cockpit ) {
-            let map = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/ScifiFighterCockpit/ScifiFighterCockpitAlbedo.png' );
-            let metRough = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/ScifiFighterCockpit/metRough.png' );
-            let normal = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/ScifiFighterCockpit/ScifiFighterCockpitNormal.png' );
-            let aoMap = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/ScifiFighterCockpit/ScifiFighterCockpitAO.png' );
+            let map = this.loadTexture( '3d/ships/Textures/ScifiFighterCockpit/ScifiFighterCockpitAlbedo.png' );
+            map.name = 'CockpitAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/ScifiFighterCockpit/metRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/ScifiFighterCockpit/ScifiFighterCockpitNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/ScifiFighterCockpit/ScifiFighterCockpitAO.png' );
 
             G.materials.Cockpit = new MeshStandardMaterial({
                 map: map,
@@ -352,14 +552,56 @@ export class Ship {
                 normalMap: normal,
             });            
         }
-        if( ! G.materials.Drake ) {
+        if( ! G.materials.Paladin && this.shipType === 'Paladin' ) {
+            let map = this.loadTexture( '3d/ships/Textures/PaladinClassFrigate/Albedo/PaladinClassFrigateBlueAlbedo.png' );
+            map.name = 'PaladinAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/PaladinClassFrigate/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/PaladinClassFrigate/PaladinClassFrigateNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/PaladinClassFrigate/PaladinClassFrigateAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/PaladinClassFrigate/PaladinClassFrigateIllumination.png' );
             
-            let map = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/Albedo/DrakeClassFighterBlueAlbedo.png' );
+            G.materials.Paladin = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });            
+        }
+        if( ! G.materials.Hellion && this.shipType === 'Hellion' ) {
+            let map = this.loadTexture( '3d/ships/Textures/HellionClassFrigate/Albedo/HellionClassFrigateBlueAlbedo.png' );
+            map.name = 'HellionAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/HellionClassFrigate/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/HellionClassFrigate/HellionClassFrigateNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/HellionClassFrigate/HellionClassFrigateAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/HellionClassFrigate/HellionClassFrigateIllumination.png' );
+            
+            G.materials.Hellion = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });            
+        }
+        if( ! G.materials.Drake && this.shipType === 'Drake' ) {
+            
+            let map = this.loadTexture( '3d/ships/Textures/DrakeClassFighter/Albedo/DrakeClassFighterBlueAlbedo.png' );
             map.name = 'DrakeAlbedo';
-            let metRough = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/DrakeMetRough.png' );
-            let normal = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/DrakeClassFighterNormal.png' );
-            let aoMap = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/DrakeClassFighterAO.png' );
-            let emissiveMap = this.loadTexture( '3d/DrakeClassFighterFBX+OBJ/Textures/DrakeClassFighter/DrakeClassFighterIllumination.png' );
+            let metRough = this.loadTexture( '3d/ships/Textures/DrakeClassFighter/DrakeMetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/DrakeClassFighter/DrakeClassFighterNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/DrakeClassFighter/DrakeClassFighterAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/DrakeClassFighter/DrakeClassFighterIllumination.png' );
             
             G.materials.Drake = new MeshStandardMaterial({
                 map: map,
@@ -377,29 +619,30 @@ export class Ship {
     }
 
     setCustomPaint(e) {
-        
+
         let canvas = e.data.canvas;
-        canvas.width = 4096;
-        canvas.height = 4096;
-        const context = canvas.getContext('2d');
+        canvas.width = e.data.texture.width;
+        canvas.height = e.data.texture.height;
+        const context = canvas.getContext('2d', {
+            desynchronized: true,
+        });
         context.putImageData( e.data.texture , 0,0 );
         
         const texture = new CanvasTexture( canvas );
-        texture.name = 'DrakeAlbedo';
+        texture.name = e.data.name;
         
         this.ent.traverse( child => {
             if( child.isMesh && child.material && child.material.map ) {
-                if( child.material.map.name === 'DrakeAlbedo' ) {
+                if( child.material.map.name === e.data.name ) {
                     child.material.map = texture;
                 }
             }
         });
 
-        console.log( e );
     }
     
     update() {
-        
+                
         if( this.canopy ) {
             if( this.canopyOpen === 1 ) {
                 this.canopyAngle -= G.delta;
@@ -475,7 +718,7 @@ export class Ship {
 
             this.thrustStick.rotation.set( this.setControls.slideVertical*0.3 , 0 , this.setControls.slideHorizontal*0.3 );
         }
-                
+               
         if( this.rudderRight || this.rudderLeft ) {
             if( this.setControls.rudder > this.controls.rudder ) {
                 this.setControls.rudder -= G.delta * 1.5;
@@ -514,6 +757,67 @@ export class Ship {
                 }                
             }  
             this.throttle.position.z = this.thrustStartPosition + this.setControls.throttle * 1000;
+        }
+
+        if( this.ent ) {
+            
+            const start = this.ent.position.clone();
+            
+            this.ent.translateZ(1);
+            let effect = new Vector3(
+                this.ent.position.x - start.x,
+                this.ent.position.y - start.y,
+                this.ent.position.z - start.z
+            );
+            this.ent.position.copy( start.clone() );
+            
+            this.momentum.set(
+                this.momentum.x + ( this.setControls.throttle * G.delta * 100000 * effect.x ),
+                this.momentum.y + ( this.setControls.throttle * G.delta * 100000 * effect.y ),
+                this.momentum.z + ( this.setControls.throttle * G.delta * 100000 * effect.z ),
+            );
+            
+            this.ent.translateX(1);
+            effect = new Vector3(
+                this.ent.position.x - start.x,
+                this.ent.position.y - start.y,
+                this.ent.position.z - start.z
+            );
+            this.ent.position.copy( start.clone() );            
+            this.momentum.set(
+                this.momentum.x + ( - this.setControls.slideHorizontal * G.delta * 10000 * effect.x ),
+                this.momentum.y + ( - this.setControls.slideHorizontal * G.delta * 10000 * effect.y ),
+                this.momentum.z + ( - this.setControls.slideHorizontal * G.delta * 10000 * effect.z ),
+            );
+
+            this.ent.translateY(1);
+            effect = new Vector3(
+                this.ent.position.x - start.x,
+                this.ent.position.y - start.y,
+                this.ent.position.z - start.z
+            );
+            this.ent.position.copy( start.clone() );            
+            this.momentum.set(
+                this.momentum.x + ( this.setControls.slideVertical * G.delta * 10000 * effect.x ),
+                this.momentum.y + ( this.setControls.slideVertical * G.delta * 10000 * effect.y ),
+                this.momentum.z + ( this.setControls.slideVertical * G.delta * 10000 * effect.z ),
+            );
+            
+            for( let i=1 ; i<G.delta*100 ; i++ ) {
+                this.momentum.set(
+                    this.momentum.x * 0.995,
+                    this.momentum.y * 0.995,
+                    this.momentum.z * 0.995
+                );
+            }
+            
+            this.ent.rotateX( this.setControls.turnVertical * G.delta );
+            this.ent.rotateY( - this.setControls.rudder * G.delta );
+            this.ent.rotateZ( this.setControls.turnHorizontal * G.delta );
+            this.ent.position.x += this.momentum.x * G.delta;
+            this.ent.position.y += this.momentum.y * G.delta;
+            this.ent.position.z += this.momentum.z * G.delta;
+            
         }
         
     }

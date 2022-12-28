@@ -17,20 +17,63 @@
         <!-- END FOR CONSOLE ERRORS -->
         
         <form id='CustomShip'>
-            <select name='BaseColour'>
+            <div>Ship</div>
+            <select name='ShipClass'>
+                <option>Hellcat</option>
+                <option>Excalibur</option>
+                <option>Devastator</option>
+                <option>Arrow</option>
+                <option>Drake</option>
+                <option>Hellion</option>
+                <option>Paladin</option>
+            </select>
+            <select name='Underlay'>
                 <option>Red</option>
                 <option>Yellow</option>
                 <option>Green</option>
                 <option>Blue</option>
                 <option>White</option>
+                <option>Grey</option>
+                <option>Black</option>
             </select>
             <input name='Colour1' type='color'/>
             <input name='Colour2' type='color'/>
             <input name='Colour3' type='color'/>
             <input name='Colour4' type='color'/>
             <input name='Colour5' type='color'/>
+            <input name='Colour6' type='color'/>
+            <select name='Roundel'>
+                <option value='3d/roundel/british-army.png'>British Expeditionary Forces</option>
+                <option value='3d/roundel/raf.png'>Royal Space Navy</option>
+                <option value='3d/roundel/rnas.png'>Chain Home Fleet</option>
+                <option value='3d/roundel/usaac.png'>American Task Force</option>
+                <option value='3d/roundel/usaf.png'>American Home Forces</option>
+                <option value='3d/roundel/unac.png'>American Fleet Space Arm</option>
+            </select>
+            <select name='Squadron' id='Squadron'>
+            </select>
+            <script>
+                const select = document.getElementById('Squadron');
+                for( let i=1 ; i<=214 ; i++ ) {
+                    const _option = document.createElement( 'option' );
+                    _option.setAttribute( 'value' , `3d/noseart/Fantasy-Emblem-vol2 (${i}).png` );
+                    _option.innerHTML = i;
+                    select.appendChild( _option );
+                }
+            </script>
             <button>
                 Paint Ship
+            </button>
+        </form>
+        <form id='CustomCockpit'>
+            <div>Cockpit</div>
+            <input name='Colour1' type='color'/>
+            <input name='Colour2' type='color'/>
+            <input name='Colour3' type='color'/>
+            <input name='Colour4' type='color'/>
+            <input name='Colour5' type='color'/>
+            <button>
+                Paint Cockpit
             </button>
         </form>
         <div id='Editor'>

@@ -70,6 +70,13 @@ try {
         }
         else if( e.data.type === 'texture' ) {
             G.ships[0].setCustomPaint( e );
+            G.ships[1].setCustomPaint( e );
+        }
+        else if( e.data.type === 'shipClass' ) {
+            if( G.ships[1].shipType !== e.data.shipClass ) {
+                G.ships[1].destroy();
+                G.ships[1].setType( e.data.shipClass );
+            }
         }
     }
 
