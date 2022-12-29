@@ -306,11 +306,21 @@ export class Ship {
     findFixedPoints( scale ) {
         this.ent.traverse( child => {
             if( child.isBone ) {
+                if( child.name.indexOf( 'MissileRack' ) > -1 ) {
+                    this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterWeapons/ScifiFighterMissileLauncher.fbx' , child , scale );
+                    
+                    const newChild = child.clone();
+                    newChild.position.set( - child.position.x , child.position.y , child.position.z );
+                    newChild.rotation.set( child.rotation.x , child.rotation.y , - child.rotation.z );
+                    child.parent.add( newChild );
+                    this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterWeapons/ScifiFighterMissileLauncher.fbx' , newChild , scale );
+                }
                 if( child.name.indexOf( 'FixedPoint' ) > -1 ) {
                     this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterModularWeapons/ScifiFighterBarrel1.fbx' , child , scale );
 
                     const newChild = child.clone();
                     newChild.position.set( - child.position.x , child.position.y , child.position.z );
+                    newChild.rotation.set( child.rotation.x , child.rotation.y , - child.rotation.z );
                     child.parent.add( newChild );
                     this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterModularWeapons/ScifiFighterBarrel1.fbx' , newChild , scale );
                 }
@@ -322,6 +332,7 @@ export class Ship {
 
                     const newChild = child.clone();
                     newChild.position.set( - child.position.x , child.position.y , child.position.z );
+                    newChild.rotation.set( child.rotation.x , child.rotation.y , - child.rotation.z );
                     child.parent.add( newChild );
                     this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterWeapons/ScifiFighterTorpedo.fbx' , newChild , scale );
                 }
@@ -330,6 +341,16 @@ export class Ship {
     }
     addFixedPointWeapon( filename ,  mount , scale ) {
         G.fbx.load( filename , result => {
+            
+            result.traverse( child => {
+                if( child.isBone ) {
+                    if( child.name.indexOf( 'MissileMount' ) > -1 ) {
+                        console.log( 'adding missile' );
+                        this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterWeapons/ScifiFighterMissile.fbx' , child , scale );
+                    }
+                }
+            });
+            
             result.scale.set( 50000/scale , 50000/scale , 50000/scale );
             console.log( 'adding weapon' , result );
             this.applyMaterial( result , G.materials.FighterWeapons );
@@ -338,7 +359,25 @@ export class Ship {
     }
     
     getShipMeshes() {
-        if( this.shipType === 'Piranha' ) {
+        if( this.shipType === 'Starkiller' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/StarkillerClassFighter/ScifiFighterStarkillerHull.fbx',
+              hullScale: 50000,                
+            };
+        }
+        else if( this.shipType === 'Starhammer' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/StarhammerClassFighter/ScifiFighterStarhammerHull.fbx',
+              hullScale: 50000,                
+            };
+        }
+        else if( this.shipType === 'Starfury' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/StarfuryClassFighter/ScifiFighterStarfuryHull.fbx',
+              hullScale: 50000,
+            };
+        }
+        else if( this.shipType === 'Piranha' ) {
             return {
               hull: '3d/ships/MeshesFBX/PiranhaClassFighter/ScifiFighterPiranhaHull.fbx',
               hullScale: 50000,
@@ -511,6 +550,69 @@ export class Ship {
             });                          
         }
 
+        if( ! G.materials.Starkiller && this.shipType === 'Starkiller' ) {
+            let map = this.loadTexture( '3d/ships/Textures/StarkillerClassFighter/Albedo/ScifiFighterStarkillerBlueAlbedo.png' );
+            map.name = 'StarkillerAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/StarkillerClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/StarkillerClassFighter/ScifiFighterStarkillerNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/StarkillerClassFighter/ScifiFighterStarkillerAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/StarkillerClassFighter/ScifiFighterStarkillerIllumination.png' );
+            
+            G.materials.Starkiller = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });            
+        }
+        if( ! G.materials.Starhammer && this.shipType === 'Starhammer' ) {
+            let map = this.loadTexture( '3d/ships/Textures/StarhammerClassFighter/Albedo/ScifiFighterStarhammerBlueAlbedo.png' );
+            map.name = 'StarhammerAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/StarhammerClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/StarhammerClassFighter/ScifiFighterStarhammerNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/StarhammerClassFighter/ScifiFighterStarhammerAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/StarhammerClassFighter/ScifiFighterStarhammerIllumination.png' );
+            
+            G.materials.Starhammer = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });            
+        }
+        if( ! G.materials.Starfury && this.shipType === 'Starfury' ) {
+            let map = this.loadTexture( '3d/ships/Textures/StarfuryClassFighter/Albedo/ScifiFighterStarfuryBlueAlbedo.png' );
+            map.name = 'StarfuryAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/StarfuryClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/StarfuryClassFighter/ScifiFighterStarfuryNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/StarfuryClassFighter/ScifiFighterStarfuryAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/StarfuryClassFighter/ScifiFighterStarfuryIllumination.png' );
+            
+            G.materials.Starfury = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });            
+        }
         if( ! G.materials.Piranha && this.shipType === 'Piranha' ) {
             let map = this.loadTexture( '3d/ships/Textures/PiranhaClassFighter/Albedo/ScifiFighterPiranhaBlueAlbedo.png' );
             map.name = 'PiranhaAlbedo';
