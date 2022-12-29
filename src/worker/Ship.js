@@ -47,6 +47,7 @@ export class Ship {
             throttle: 0,
             slideHorizontal: 0,
             slideVertical: 0,
+            weaponDoors: 0,
         }
         this.setControls = Object.assign( {} , this.controls );
     }
@@ -70,6 +71,36 @@ export class Ship {
                 if( this.meshes.canopy ) {
                     this.loadMesh( 'canopy', this.meshes.canopy );
                 }
+                if( this.meshes.missileDoorLeft ) {
+                    this.loadMesh( 'missileDoorLeft', this.meshes.missileDoorLeft , scale );
+                    this.loadMesh( 'missileDoorRight', this.meshes.missileDoorRight , scale );
+                }
+            }
+            else if( component === 'missileDoorLeft' ) {
+                result.scale.set(1,1,1);
+                this.missileDoorLeft = result;
+                this.missileDoorLeft.position.set(
+                    0.6550,
+                    0.447,
+                    0.6250,
+                );
+                this.applyMaterial( this.missileDoorLeft , G.materials.Longbow );
+                this.ent.add( this.missileDoorLeft );
+                console.log( this.missileDoorLeft , scale );
+            }
+            else if( component === 'missileDoorRight' ) {
+                result.scale.set(1,1,1);
+                this.missileDoorRight = result;
+                this.missileDoorRight.position.set(
+                    - 0.6550,
+                    0.447,
+                    0.6250,
+                );
+                this.applyMaterial( this.missileDoorRight , G.materials.Longbow );
+                this.ent.add( this.missileDoorRight );
+            }            
+            else if( component === 'missileDoorRight' ) {
+                
             }
             else if( component === 'canopy' ) {
                 this.canopy = result;
@@ -274,13 +305,23 @@ export class Ship {
     
     findFixedPoints( scale ) {
         this.ent.traverse( child => {
-            if( child.isBone && child.name.indexOf( 'FixedPoint' ) > -1 ) {
-                this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterModularWeapons/ScifiFighterBarrel1.fbx' , child , scale );
+            if( child.isBone ) {
+                if( child.name.indexOf( 'FixedPoint' ) > -1 ) {
+                    this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterModularWeapons/ScifiFighterBarrel1.fbx' , child , scale );
 
-                const newChild = child.clone();
-                newChild.position.set( - child.position.x , child.position.y , child.position.z );
-                child.parent.add( newChild );
-                this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterModularWeapons/ScifiFighterBarrel1.fbx' , newChild , scale );
+                    const newChild = child.clone();
+                    newChild.position.set( - child.position.x , child.position.y , child.position.z );
+                    child.parent.add( newChild );
+                    this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterModularWeapons/ScifiFighterBarrel1.fbx' , newChild , scale );
+                }
+                if( child.name.indexOf( 'TorpedoMount' ) > -1 ) {
+                    this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterWeapons/ScifiFighterTorpedo.fbx' , child , scale );
+
+                    const newChild = child.clone();
+                    newChild.position.set( - child.position.x , child.position.y , child.position.z );
+                    child.parent.add( newChild );
+                    this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterWeapons/ScifiFighterTorpedo.fbx' , newChild , scale );
+                }
             }
         });
     }
@@ -294,7 +335,15 @@ export class Ship {
     }
     
     getShipMeshes() {
-        if( this.shipType === 'Hellcat' ) {
+        if( this.shipType === 'Longbow' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/LongbowClassFighter/ScifiFighterLongbowHull.fbx',
+              hullScale: 50000,
+              missileDoorLeft: '3d/ships/MeshesFBX/LongbowClassFighter/ScifiFighterLongbowMissileDoorLeft.fbx',
+              missileDoorRight: '3d/ships/MeshesFBX/LongbowClassFighter/ScifiFighterLongbowMissileDoorRight.fbx',
+            };
+        }
+        else if( this.shipType === 'Hellcat' ) {
             return {
               hull: '3d/ships/MeshesFBX/HellcatClassFighter/ScifiFighterHellcatHull.fbx',
               hullScale: 50000,
@@ -447,8 +496,29 @@ export class Ship {
             });                          
         }
 
-        if( ! G.materials.Hellcat && this.shipType === 'Hellcat' ) {
+        if( ! G.materials.Longbow && this.shipType === 'Longbow' ) {
+            let map = this.loadTexture( '3d/ships/Textures/LongbowClassFighter/Albedo/ScifiFighterLongbowBlueAlbedo.png' );
+            map.name = 'LongbowAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/LongbowClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/LongbowClassFighter/ScifiFighterLongbowNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/LongbowClassFighter/ScifiFighterLongbowAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/LongbowClassFighter/ScifiFighterLongbowIllumination.png' );
             
+            G.materials.Longbow = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });
+        } 
+
+        if( ! G.materials.Hellcat && this.shipType === 'Hellcat' ) {
             let map = this.loadTexture( '3d/ships/Textures/HellcatClassFighter/Albedo/ScifiFighterHellcatBlueAlbedo.png' );
             map.name = 'HellcatAlbedo';
             let metRough = this.loadTexture( '3d/ships/Textures/HellcatClassFighter/MetRough.png' );
@@ -658,6 +728,27 @@ export class Ship {
             }
             this.canopy.rotation.set( this.canopyAngle , 0 , 0 );
         }
+        if( this.missileDoorLeft || this.missileDoorRight ) {
+            if( this.controls.weaponDoors === 1 ) {
+                this.setControls.weaponDoors -= G.delta * 0.25;
+                if( this.setControls.weaponDoors < -1 ) {
+                    this.setControls.weaponDoors = -1;
+                }
+            }
+            else {
+                this.setControls.weaponDoors += G.delta * 0.25;
+                if( this.setControls.weaponDoors > 0 ) {
+                    this.setControls.weaponDoors = 0;
+                }
+            }
+            
+            if( this.missileDoorLeft ) {
+                this.missileDoorLeft.rotation.set( this.setControls.weaponDoors * Math.PI/2 , 0 , 0 );
+            }
+            if( this.missileDoorRight ) {
+                this.missileDoorRight.rotation.set( this.setControls.weaponDoors * Math.PI/2 , 0 , 0 );
+            }
+        }        
         
         if( this.joystick ) {
             if( this.setControls.turnHorizontal > this.controls.turnHorizontal ) {

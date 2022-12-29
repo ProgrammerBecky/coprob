@@ -67,6 +67,7 @@ try {
         }
         else if( e.data.type === 'controls' ) {
             G.ships[0].controls = e.data.controls;
+            G.ships[1].controls.weaponDoors = G.ships[0].controls.weaponDoors;
         }
         else if( e.data.type === 'texture' ) {
             G.ships[0].setCustomPaint( e );

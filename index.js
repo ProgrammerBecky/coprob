@@ -42,7 +42,29 @@ const getShipTextureParams = async ( custom ) => {
 
         let params = {};
 
-        if( custom.ShipClass === 'Hellcat' ) {
+        if( custom.ShipClass === 'Longbow' ) {
+            const squadronMask = await getImageData( '3d/ships/Textures/LongbowClassFighter/SquadronMask.png' );
+            
+            params = {
+                underlay: await getImageData( `3d/ships/Textures/LongbowClassFighter/Albedo/ScifiFighterLongbow${custom.Underlay}Albedo.png` ),
+                mask: await getImageData( '3d/ships/Textures/LongbowClassFighter/Colour.png' ),
+                base: await getImageData( '3d/ships/Textures/LongbowClassFighter/ScifiFighterLongbowGloss.png' ),
+                overlay: await getImageData( '3d/ships/Textures/LongbowClassFighter/Overlay.png' ),
+                maskPalette: [
+                    {r:86,g:86,b:86},
+                    {r:47,g:40,b:40},
+                    {r:125,g:125,b:125},
+                    {r:160,g:160,b:160},
+                    {r:94,g:132,b:179},
+                    {r:204,g:97,b:0},
+                ],
+                markings: [
+                    { type: 'roundel', x: 1105, y: 698, size: 72 },
+                    { type: 'squadronArt', x: 33, y: 401, size: 128, mask: squadronMask },
+                ], 
+            };
+        }  
+        else if( custom.ShipClass === 'Hellcat' ) {
             const squadronMask = await getImageData( '3d/ships/Textures/HellcatClassFighter/SquadronMark.png' );
             
             params = {
@@ -361,6 +383,7 @@ let controls = {
     throttle: 0,
     slideHorizontal: 0,
     slideVertical: 0,
+    weaponDoors: 0,
 };
 window.addEventListener( 'keydown' , (e) => {
    if( e.code === 'KeyC' ) {
@@ -448,6 +471,14 @@ window.addEventListener( 'keydown' , (e) => {
    else if( e.code === 'Digit0' ) {
        controls.throttle = 0;
        sendControls();
+   }
+   else if( e.code === 'KeyR' ) {
+        controls.weaponDoors = 1;
+        sendControls();
+   }
+   else if( e.code === 'KeyF' ) {
+        controls.weaponDoors = 0;
+        sendControls();
    }
 });
 window.addEventListener( 'keyup' , (e) => {
