@@ -314,6 +314,9 @@ export class Ship {
                     child.parent.add( newChild );
                     this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterModularWeapons/ScifiFighterBarrel1.fbx' , newChild , scale );
                 }
+                if( child.name.indexOf( 'DorsalPoint' ) > -1 ) {
+                    this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterModularWeapons/ScifiFighterBarrel1.fbx' , child , scale );
+                }
                 if( child.name.indexOf( 'TorpedoMount' ) > -1 ) {
                     this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterWeapons/ScifiFighterTorpedo.fbx' , child , scale );
 
@@ -335,7 +338,19 @@ export class Ship {
     }
     
     getShipMeshes() {
-        if( this.shipType === 'Longbow' ) {
+        if( this.shipType === 'Piranha' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/PiranhaClassFighter/ScifiFighterPiranhaHull.fbx',
+              hullScale: 50000,
+            };
+        }
+        else if( this.shipType === 'Panther' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/PantherClassFighter/ScifiFighterPantherHull.fbx',
+              hullScale: 50000,
+            };
+        }
+        else if( this.shipType === 'Longbow' ) {
             return {
               hull: '3d/ships/MeshesFBX/LongbowClassFighter/ScifiFighterLongbowHull.fbx',
               hullScale: 50000,
@@ -496,6 +511,48 @@ export class Ship {
             });                          
         }
 
+        if( ! G.materials.Piranha && this.shipType === 'Piranha' ) {
+            let map = this.loadTexture( '3d/ships/Textures/PiranhaClassFighter/Albedo/ScifiFighterPiranhaBlueAlbedo.png' );
+            map.name = 'PiranhaAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/PiranhaClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/PiranhaClassFighter/ScifiFighterPiranhaNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/PiranhaClassFighter/ScifiFighterPiranhaAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/PiranhaClassFighter/ScifiFighterPiranhaIllumination.png' );
+            
+            G.materials.Piranha = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });            
+        }
+        if( ! G.materials.Panther && this.shipType === 'Panther' ) {
+            let map = this.loadTexture( '3d/ships/Textures/PantherClassFighter/Albedo/ScifiFighterPantherBlueAlbedo.png' );
+            map.name = 'PantherAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/PantherClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/PantherClassFighter/ScifiFighterPantherNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/PantherClassFighter/ScifiFighterPantherAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/PantherClassFighter/ScifiFighterPantherIllumination.png' );
+            
+            G.materials.Panther = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });
+        } 
         if( ! G.materials.Longbow && this.shipType === 'Longbow' ) {
             let map = this.loadTexture( '3d/ships/Textures/LongbowClassFighter/Albedo/ScifiFighterLongbowBlueAlbedo.png' );
             map.name = 'LongbowAlbedo';

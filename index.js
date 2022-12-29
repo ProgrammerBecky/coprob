@@ -42,7 +42,53 @@ const getShipTextureParams = async ( custom ) => {
 
         let params = {};
 
-        if( custom.ShipClass === 'Longbow' ) {
+        if( custom.ShipClass === 'Piranha' ) {
+            const squadronMask = await getImageData( '3d/ships/Textures/PiranhaClassFighter/SquadronMark.png' );
+            
+            params = {
+                underlay: await getImageData( `3d/ships/Textures/PiranhaClassFighter/Albedo/ScifiFighterPiranha${custom.Underlay}Albedo.png` ),
+                mask: await getImageData( '3d/ships/Textures/PiranhaClassFighter/Colour.png' ),
+                base: await getImageData( '3d/ships/Textures/PiranhaClassFighter/ScifiFighterPiranhaGloss.png' ),
+                overlay: await getImageData( '3d/ships/Textures/PiranhaClassFighter/Overlay.png' ),
+                maskPalette: [
+                    {r:86,g:86,b:86},
+                    {r:47,g:40,b:40},
+                    {r:125,g:125,b:125},
+                    {r:160,g:160,b:160},
+                    {r:94,g:132,b:179},
+                    {r:204,g:97,b:0},
+                ],
+                markings: [
+                    { type: 'roundel', x: 1521, y: 1066, size: 55 },
+                    { type: 'roundel', x: 1293, y: 1794, size: 30 },
+                    { type: 'squadronArt', x: 1030, y: 364, size: 99, mask: squadronMask },
+                ], 
+            };
+        }  
+        else if( custom.ShipClass === 'Panther' ) {
+            const squadronMask = await getImageData( '3d/ships/Textures/PantherClassFighter/SquadronMark.png' );
+            
+            params = {
+                underlay: await getImageData( `3d/ships/Textures/PantherClassFighter/Albedo/ScifiFighterPanther${custom.Underlay}Albedo.png` ),
+                mask: await getImageData( '3d/ships/Textures/PantherClassFighter/Colour.png' ),
+                base: await getImageData( '3d/ships/Textures/PantherClassFighter/ScifiFighterPantherGloss.png' ),
+                overlay: await getImageData( '3d/ships/Textures/PantherClassFighter/Overlay.png' ),
+                maskPalette: [
+                    {r:86,g:86,b:86},
+                    {r:47,g:40,b:40},
+                    {r:125,g:125,b:125},
+                    {r:160,g:160,b:160},
+                    {r:94,g:132,b:179},
+                    {r:204,g:97,b:0},
+                ],
+                markings: [
+                    { type: 'roundel', x: 1691, y: 1715, size: 55 },
+                    { type: 'roundel', x: 1691, y: 1855, size: 55 },
+                    { type: 'squadronArt', x: 845, y: 734, size: 104, mask: squadronMask },
+                ], 
+            };
+        }  
+        else if( custom.ShipClass === 'Longbow' ) {
             const squadronMask = await getImageData( '3d/ships/Textures/LongbowClassFighter/SquadronMask.png' );
             
             params = {
