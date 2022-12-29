@@ -58,7 +58,7 @@ export const init3d = (e) => {
     G.viewWidth = e.data.width;
     G.viewHeight = e.data.height;
     
-    G.camera = new PerspectiveCamera( 60, e.data.width / e.data.height , 1 , 5000000 );
+    G.camera = new PerspectiveCamera( 60, e.data.width / e.data.height , 1 , 50000000 );
     G.camera.name = 'Camera';
     G.scene.add( G.camera );
 

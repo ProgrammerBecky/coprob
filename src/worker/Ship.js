@@ -4,6 +4,7 @@ import {
     RepeatWrapping,
     Vector2,
     Vector3,
+    Quaternion,
     Color,
     DoubleSide,
     CanvasTexture,
@@ -52,7 +53,7 @@ export class Ship {
         this.setControls = Object.assign( {} , this.controls );
     }
     
-    loadMesh( component , filename , scale ) {
+    loadMesh( component , filename , scale , parent ) {
         G.fbx.load( filename , result => {
 
             if( scale ) {
@@ -75,6 +76,39 @@ export class Ship {
                     this.loadMesh( 'missileDoorLeft', this.meshes.missileDoorLeft , scale );
                     this.loadMesh( 'missileDoorRight', this.meshes.missileDoorRight , scale );
                 }
+                if( this.meshes.forceField ) {
+                    this.loadMesh( 'forceField' , this.meshes.forceField , scale );
+                }
+                if( this.meshes.hangerDoorUpper ) {
+                    this.ent.traverse( child => {
+                        if( child.isBone ) {
+                            if( child.name.indexOf( 'HangerDoorUpper' ) > -1 ) {
+                                this.loadMesh( 'hangerDoorUpper' , this.meshes.hangerDoorUpper , scale , child );
+                            }
+                            if( child.name.indexOf( 'HangerDoorLower' ) > -1 ) {
+                                this.loadMesh( 'hangerDoorLower' , this.meshes.hangerDoorLower , scale , child );
+                            }
+                        }
+                    });
+                }
+            }
+            else if( component === 'forceField' ) {
+                result.scale.set( 1,1,1 );
+                this.ent.add( result );
+                this.applyMaterial( result , G.materials.forceField );
+            }
+            else if( ['hangerDoorUpper','hangerDoorLower'].includes( component ) ) {
+                result.scale.set( 1,1,1 );
+                parent.add( result );
+                this.applyMaterial( result , G.materials[this.shipType] );
+                if( component === 'hangerDoorUpper' ) {
+                    if( ! this.hangerDoorUpper ) this.hangerDoorUpper = [];
+                    this.hangerDoorUpper.push( result );
+                }
+                else {
+                    if( ! this.hangerDoorLower ) this.hangerDoorLower = [];
+                    this.hangerDoorLower.push( result );
+                }
             }
             else if( component === 'missileDoorLeft' ) {
                 result.scale.set(1,1,1);
@@ -86,7 +120,6 @@ export class Ship {
                 );
                 this.applyMaterial( this.missileDoorLeft , G.materials.Longbow );
                 this.ent.add( this.missileDoorLeft );
-                console.log( this.missileDoorLeft , scale );
             }
             else if( component === 'missileDoorRight' ) {
                 result.scale.set(1,1,1);
@@ -306,6 +339,11 @@ export class Ship {
     findFixedPoints( scale ) {
         this.ent.traverse( child => {
             if( child.isBone ) {
+                if( child.name.indexOf( 'ShipSpawn' ) > -1 ) {
+                    const newShip = new Ship( 'Thunderbolt' );
+                    newShip.dockedAt = child;
+                    G.ships.push( newShip );
+                }
                 if( child.name.indexOf( 'MissileRack' ) > -1 ) {
                     this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterWeapons/ScifiFighterMissileLauncher.fbx' , child , scale );
                     
@@ -345,21 +383,40 @@ export class Ship {
             result.traverse( child => {
                 if( child.isBone ) {
                     if( child.name.indexOf( 'MissileMount' ) > -1 ) {
-                        console.log( 'adding missile' );
                         this.addFixedPointWeapon( '3d/ships/MeshesFBX/ScifiFighterWeapons/ScifiFighterMissile.fbx' , child , scale );
                     }
                 }
             });
             
             result.scale.set( 50000/scale , 50000/scale , 50000/scale );
-            console.log( 'adding weapon' , result );
             this.applyMaterial( result , G.materials.FighterWeapons );
             mount.add( result );
         });
     }
     
     getShipMeshes() {
-        if( this.shipType === 'Starkiller' ) {
+        if( this.shipType === 'Archangel' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/ScifiBattleshipArchangel/ScifiBattleshipArchangelHull.fbx',
+              hullScale: 50000, 
+              forceField: '3d/ships/MeshesFBX/ScifiBattleshipArchangel/ScifiBattleshipArchangelHangarForceField.fbx',
+              hangerDoorUpper: '3d/ships/MeshesFBX/ScifiBattleshipArchangel/ScifiBattleshipArchangelHangarDoorUpper.fbx',
+              hangerDoorLower: '3d/ships/MeshesFBX/ScifiBattleshipArchangel/ScifiBattleshipArchangelHangarDoorLower.fbx',
+            };                        
+        }
+        else if( this.shipType === 'Tigershark' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/TigersharkClassFighter/ScifiFighterTigersharkHull.fbx',
+              hullScale: 50000,                
+            };                        
+        }
+        else if( this.shipType === 'Thunderbolt' ) {
+            return {
+              hull: '3d/ships/MeshesFBX/ThunderboltClassFighter/ScifiFighterThunderboltHull.fbx',
+              hullScale: 50000,                
+            };            
+        }
+        else if( this.shipType === 'Starkiller' ) {
             return {
               hull: '3d/ships/MeshesFBX/StarkillerClassFighter/ScifiFighterStarkillerHull.fbx',
               hullScale: 50000,                
@@ -528,6 +585,22 @@ export class Ship {
                 side: DoubleSide,
             });            
         }
+        if( ! G.materials.forceField ) {
+            let map = this.loadTexture( '3d/ships/Textures/ScifiBattleshipArchangelHangarForceField/ScifiDestroyerForceField.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/ScifiBattleshipArchangelHangarForceField/ScifiDestroyerForceFieldIllumination.png' );
+            
+            G.materials.forceField = new MeshStandardMaterial({
+                name: 'ForceField',
+                map: map,
+                envMap: G.environmentMap,
+                roughness: 0,
+                metalness: 1,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+                side: DoubleSide,
+                alphaTest: 0.2,
+            });                          
+        }
         if( ! G.materials.FighterWeapons ) {
             let map = this.loadTexture( '3d/ships/Textures/ScifiFighterModularWeapons/ScifiFighterModularWeaponsAlbedo.png' );
             let metRough = this.loadTexture( '3d/ships/Textures/ScifiFighterModularWeapons/MetRough.png' );
@@ -550,6 +623,69 @@ export class Ship {
             });                          
         }
 
+        if( ! G.materials.Archangel && this.shipType === 'Archangel' ) {
+            let map = this.loadTexture( '3d/ships/Textures/ScifiBattleshipArchangel/Albedo/ScifiBattleshipArchangelBlueAlbedo.png' );
+            map.name = 'ArchangelAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/ScifiBattleshipArchangel/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/ScifiBattleshipArchangel/ScifiBattleshipArchangelNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/ScifiBattleshipArchangel/ScifiBattleshipArchangelAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/ScifiBattleshipArchangel/ScifiBattleshipArchangelIllumination.png' );
+            
+            G.materials.Archangel = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });            
+        }
+        if( ! G.materials.Tigershark && this.shipType === 'Tigershark' ) {
+            let map = this.loadTexture( '3d/ships/Textures/TigersharkClassFighter/Albedo/ScifiFighterTigersharkBlueAlbedo.png' );
+            map.name = 'TigersharkAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/TigersharkClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/TigersharkClassFighter/ScifiFighterTigersharkNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/TigersharkClassFighter/ScifiFighterTigersharkAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/ThunderboltClassFighter/ScifiFighterTigersharkIllumination.png' );
+            
+            G.materials.Tigershark = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });            
+        }
+        if( ! G.materials.Thunderbolt && this.shipType === 'Thunderbolt' ) {
+            let map = this.loadTexture( '3d/ships/Textures/ThunderboltClassFighter/Albedo/ScifiFighterThunderboltBlueAlbedo.png' );
+            map.name = 'ThunderboltAlbedo';
+            let metRough = this.loadTexture( '3d/ships/Textures/ThunderboltClassFighter/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/ThunderboltClassFighter/ScifiFighterThunderboltNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/ThunderboltClassFighter/ScifiFighterThunderboltAO.png' );
+            let emissiveMap = this.loadTexture( '3d/ships/Textures/ThunderboltClassFighter/ScifiFighterThunderboltIllumination.png' );
+            
+            G.materials.Thunderbolt = new MeshStandardMaterial({
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+                emissive: emissive, 
+                emissiveMap: emissiveMap,
+            });            
+        }
         if( ! G.materials.Starkiller && this.shipType === 'Starkiller' ) {
             let map = this.loadTexture( '3d/ships/Textures/StarkillerClassFighter/Albedo/ScifiFighterStarkillerBlueAlbedo.png' );
             map.name = 'StarkillerAlbedo';
@@ -887,7 +1023,7 @@ export class Ship {
             }
             this.canopy.rotation.set( this.canopyAngle , 0 , 0 );
         }
-        if( this.missileDoorLeft || this.missileDoorRight ) {
+        if( this.missileDoorLeft || this.missileDoorRight || this.hangerDoorLower || this.hangerDoorUpper ) {
             if( this.controls.weaponDoors === 1 ) {
                 this.setControls.weaponDoors -= G.delta * 0.25;
                 if( this.setControls.weaponDoors < -1 ) {
@@ -906,6 +1042,16 @@ export class Ship {
             }
             if( this.missileDoorRight ) {
                 this.missileDoorRight.rotation.set( this.setControls.weaponDoors * Math.PI/2 , 0 , 0 );
+            }
+            if( this.hangerDoorUpper ) {
+                this.hangerDoorUpper.map( door => {
+                    door.position.set( 0 , - this.setControls.weaponDoors * 2.6 , 0 );
+                });
+            }
+            if( this.hangerDoorLower ) {
+                this.hangerDoorLower.map( door => {
+                    door.position.set( 0 , this.setControls.weaponDoors * 2.6 , 0 );
+                });                
             }
         }        
         
@@ -1011,6 +1157,25 @@ export class Ship {
 
         if( this.ent ) {
             
+            if( this.dockedAt ) {
+                const vector = new Vector3(0,0,0);
+                this.dockedAt.getWorldPosition( vector );
+
+                let boundHeight = 0;
+                this.ent.children.map( child => {
+                    if( child.isMesh ) {
+                        if( child.geometry.boundingSphere ) {
+                            boundHeight = Math.max( boundHeight , this.ent.scale.y * child.geometry.boundingSphere.radius * 0.5 );
+                        }
+                    }
+                });
+            
+                this.ent.position.set( vector.x , vector.y + boundHeight, vector.z );
+                
+                const quaternion = new Quaternion(0,0,0,1);
+                this.dockedAt.getWorldQuaternion( quaternion );
+                this.ent.quaternion.copy( quaternion.clone() );
+            }
             const start = this.ent.position.clone();
             
             this.ent.translateZ(1);

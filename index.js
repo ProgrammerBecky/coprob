@@ -42,7 +42,76 @@ const getShipTextureParams = async ( custom ) => {
 
         let params = {};
 
-        if( custom.ShipClass === 'Starkiller' ) {
+        if( custom.ShipClass === 'Archangel' ) {
+            //const squadronMask = await getImageData( '3d/ships/Textures/ScifiBattleshipArchangel/SquadronMask.png' );
+            
+            params = {
+                underlay: await getImageData( `3d/ships/Textures/ScifiBattleshipArchangel/Albedo/ScifiBattleshipArchangel${custom.Underlay}Albedo.png` ),
+                mask: await getImageData( '3d/ships/Textures/ScifiBattleshipArchangel/Colour.png' ),
+                base: await getImageData( '3d/ships/Textures/ScifiBattleshipArchangel/ScifiBattleshipArchangelGloss.png' ),
+                overlay: await getImageData( '3d/ships/Textures/ScifiBattleshipArchangel/Overlay.png' ),
+                maskPalette: [
+                    {r:86,g:86,b:86},
+                    {r:47,g:40,b:40},
+                    {r:103,g:103,b:103},
+                    {r:255,g:255,b:255},
+                    {r:59,g:108,b:154},
+                    {r:94,g:132,b:179},
+                ],
+                markings: [
+                    //{ type: 'roundel', x: 1846, y: 876, size: 36 },
+                    //{ type: 'roundel', x: 711, y: 1543, size: 30 },
+                    //{ type: 'squadronArt', x: 48, y: 638, size: 68, mask: squadronMask },
+                ], 
+            };
+        } 
+        else if( custom.ShipClass === 'Tigershark' ) {
+            const squadronMask = await getImageData( '3d/ships/Textures/TigersharkClassFighter/SquadronMask.png' );
+            
+            params = {
+                underlay: await getImageData( `3d/ships/Textures/TigersharkClassFighter/Albedo/ScifiFighterTigershark${custom.Underlay}Albedo.png` ),
+                mask: await getImageData( '3d/ships/Textures/TigersharkClassFighter/Colour.png' ),
+                base: await getImageData( '3d/ships/Textures/TigersharkClassFighter/ScifiFighterTigersharkGloss.png' ),
+                overlay: await getImageData( '3d/ships/Textures/TigersharkClassFighter/Overlay.png' ),
+                maskPalette: [
+                    {r:86,g:86,b:86},
+                    {r:47,g:40,b:40},
+                    {r:125,g:125,b:125},
+                    {r:160,g:160,b:160},
+                    {r:94,g:132,b:179},
+                    {r:204,g:97,b:0},
+                ],
+                markings: [
+                    { type: 'roundel', x: 1846, y: 876, size: 36 },
+                    { type: 'roundel', x: 711, y: 1543, size: 30 },
+                    { type: 'squadronArt', x: 48, y: 638, size: 68, mask: squadronMask },
+                ], 
+            };
+        } 
+        else if( custom.ShipClass === 'Thunderbolt' ) {
+            const squadronMask = await getImageData( '3d/ships/Textures/ThunderboltClassFighter/SquadronMark.png' );
+            
+            params = {
+                underlay: await getImageData( `3d/ships/Textures/ThunderboltClassFighter/Albedo/ScifiFighterThunderbolt${custom.Underlay}Albedo.png` ),
+                mask: await getImageData( '3d/ships/Textures/ThunderboltClassFighter/Colour.png' ),
+                base: await getImageData( '3d/ships/Textures/ThunderboltClassFighter/ScifiFighterThunderboltGloss.png' ),
+                overlay: await getImageData( '3d/ships/Textures/ThunderboltClassFighter/Overlay.png' ),
+                maskPalette: [
+                    {r:86,g:86,b:86},
+                    {r:47,g:40,b:40},
+                    {r:125,g:125,b:125},
+                    {r:160,g:160,b:160},
+                    {r:94,g:132,b:179},
+                    {r:204,g:97,b:0},
+                ],
+                markings: [
+                    { type: 'roundel', x: 45, y: 547, size: 45 },
+                    { type: 'roundel', x: 45, y: 838, size: 45 },
+                    { type: 'squadronArt', x: 1831, y: 193, size: 196, mask: squadronMask },
+                ], 
+            };
+        } 
+        else if( custom.ShipClass === 'Starkiller' ) {
             const squadronMask = await getImageData( '3d/ships/Textures/StarkillerClassFighter/SquadronMark.png' );
             
             params = {
