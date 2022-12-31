@@ -4,7 +4,7 @@ import {
     WebGLRenderer,
     PerspectiveCamera,
     AmbientLight,
-    PointLight,
+    DirectionalLight,
     CubeTextureLoader,
     PCFSoftShadowMap,
     Clock,
@@ -17,6 +17,8 @@ import {
     Color,
     Vector3,
 } from 'three';
+import { CSM } from './../../node_modules/three/examples/jsm/csm/CSM.js';
+import { CSMHelper } from './../../node_modules/three/examples/jsm/csm/CSMHelper.js';
 import { animate } from './animate.js';
 import { Ship } from './Ship.js';
 
@@ -71,9 +73,9 @@ export const init3d = (e) => {
     G.sunRealPosition = new Vector3(
         0 , 0 , 50000000
     );
-
-    G.sun = new PointLight( 0x888888 , 1 , 5000000);
-    G.sun.position.set( 0 , 0 , 1250000 );
+/*
+    G.sun = new DirectionalLight( 0x888888 , 1 );
+    G.sun.position.set( 0 , 1 , 1 );
     G.sun.name = 'Sun Light';
     G.sun.castShadow = true;
     //G.sun.shadow.bias = 0.0002;
@@ -81,13 +83,28 @@ export const init3d = (e) => {
     G.sun.shadow.mapSize.width = 4096;
     G.sun.shadow.mapSize.height = 4096;
     G.sun.shadow.camera.near = 1;
-    G.sun.shadow.camera.far = 100000;
-    G.sun.shadow.camera.left = -100000;
-    G.sun.shadow.camera.right = 100000;
-    G.sun.shadow.camera.top = 100000;
-    G.sun.shadow.camera.bottom = -100000;
+    G.sun.shadow.camera.far = 2500000;
+    G.sun.shadow.camera.left = -1250000;
+    G.sun.shadow.camera.right = 1250000;
+    G.sun.shadow.camera.top = 1250000;
+    G.sun.shadow.camera.bottom = -1250000;
+*/   
+    G.csm = new CSM({
+        fade: true,
+        maxFar: 5000000,
+        lightNear: 1000,
+        lightFar: 5000000,
+        shadowBias: 0.00015,
+        cascades: 4,
+        mode: 'logarithmic',
+        parent: G.scene,
+        shadowMapSize: 4096,
+        lightDirection: new Vector3( -0.5,0.5,0.5 ),
+        camera: G.camera,
+        lightIntensity: 1.5,
+    });
    
-    G.scene.add( G.sun );
+    //G.scene.add( G.sun );
     //G.sun.target.name = 'Sun Light Target';
     //G.scene.add( G.sun.target );
     
@@ -95,7 +112,7 @@ export const init3d = (e) => {
 
     G.ships = [
         new Ship( 'Drake' ),
-        new Ship( 'Drake' ),
+        new Ship( 'Archangel' ),
     ];
     animate();
     

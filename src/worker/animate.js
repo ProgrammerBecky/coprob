@@ -15,8 +15,8 @@ export const animate = () => {
             );
             G.sun.translateZ( 80000 );
             
-            //G.sun.position.set( G.camera.position.x-1024*10,  1024*25, G.camera.position.z-1024*5 );
-            //G.sun.target.position.set( G.camera.position.x, 0, G.camera.position.z );
+            G.sun.position.set( G.camera.position.x-1250000,  1250000, G.camera.position.z-1250000 );
+            G.sun.target.position.set( G.camera.position.x, 0, G.camera.position.z );
         }
     }
     
@@ -38,6 +38,9 @@ export const animate = () => {
         G.camera.rotateX( 0.5 - G.mouse.y );
     }
     
+    if( G.csm ) {
+        G.csm.update();
+    }
     G.renderer.render( G.scene , G.camera );
     
     G.ships.map( ship => {

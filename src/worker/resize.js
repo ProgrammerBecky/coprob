@@ -6,4 +6,5 @@ export const resize = (e) => {
     G.renderer.setSize( e.data.width , e.data.height );
     G.viewWidth = e.data.width;
     G.viewHeight = e.data.height;
+    G.csm.updateFrustums();
 }
