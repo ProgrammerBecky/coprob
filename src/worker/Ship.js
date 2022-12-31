@@ -339,6 +339,15 @@ export class Ship {
     findFixedPoints( scale ) {
         this.ent.traverse( child => {
             if( child.isBone ) {
+                if( child.name.indexOf( 'PrimaryTurret' ) > -1 ) {
+                    this.addCapitalShipWeapon( '3d/ships/MeshesFBX/ScifiCapitalShipWeapons/ScifiCapitalTurretMKIIIBody.fbx' , child , scale );
+                }
+                if( child.name.indexOf( 'SecondaryTurret' ) > -1 ) {
+                    this.addCapitalShipWeapon( '3d/ships/MeshesFBX/ScifiCapitalShipWeapons/ScifiCapitalTurretMKIIBody.fbx' , child , scale );
+                }                
+                if( child.name.indexOf( 'TertiaryTurret' ) > -1 ) {
+                    this.addCapitalShipWeapon( '3d/ships/MeshesFBX/ScifiCapitalShipWeapons/ScifiCapitalTurretMKIBody.fbx' , child , scale );
+                }
                 if( child.name.indexOf( 'ShipSpawn' ) > -1 ) {
                     const newShip = new Ship( 'Thunderbolt' );
                     newShip.dockedAt = child;
@@ -376,6 +385,32 @@ export class Ship {
                 }
             }
         });
+    }
+    addCapitalShipWeapon( filename , mount , scale ) {
+        G.fbx.load( filename , result => {
+            
+            result.traverse( child => {
+                if( child.isBone ) {
+                    if( child.name.indexOf( 'MKIIIBarrellMount' ) > -1 ) {
+                        this.addCapitalShipWeapon( '3d/ships/MeshesFBX/ScifiCapitalShipWeapons/ScifiCapitalTurretMKIIIBarrelAnimated1.fbx' , child , scale );
+                        this.addCapitalShipWeapon( '3d/ships/MeshesFBX/ScifiCapitalShipWeapons/ScifiCapitalTurretMKIIIBarrelAnimated2.fbx' , child , scale );
+                        this.addCapitalShipWeapon( '3d/ships/MeshesFBX/ScifiCapitalShipWeapons/ScifiCapitalTurretMKIIIBarrelAnimated3.fbx' , child , scale );
+                    }
+                    if( child.name.indexOf( 'MkIIBarrellMount' ) > -1 ) {
+                        this.addCapitalShipWeapon( '3d/ships/MeshesFBX/ScifiCapitalShipWeapons/ScifiCapitalTurretMKIIBarrelAnimated1.fbx' , child , scale );
+                        this.addCapitalShipWeapon( '3d/ships/MeshesFBX/ScifiCapitalShipWeapons/ScifiCapitalTurretMKIIBarrelAnimated2.fbx' , child , scale );
+                    }                   
+                    if( child.name.indexOf( 'MkIBarrellMount' ) > -1 ) {
+                        this.addCapitalShipWeapon( '3d/ships/MeshesFBX/ScifiCapitalShipWeapons/ScifiCapitalTurretMKIBarrel1Animated.fbx' , child , scale );
+                        this.addCapitalShipWeapon( '3d/ships/MeshesFBX/ScifiCapitalShipWeapons/ScifiCapitalMinigunMKI.fbx' , child , scale );
+                    }                   
+                }
+            });
+            
+            result.scale.set( 50000/scale , 50000/scale , 50000/scale );
+            this.applyMaterial( result , G.materials.CapitalWeapons );
+            mount.add( result );
+        });        
     }
     addFixedPointWeapon( filename ,  mount , scale ) {
         G.fbx.load( filename , result => {
@@ -600,6 +635,24 @@ export class Ship {
                 side: DoubleSide,
                 alphaTest: 0.2,
             });                          
+        }
+        if( ! G.materials.CapitalWeapons ) {
+            let map = this.loadTexture( '3d/ships/Textures/ScifiCapitalShipWeapons/ScifiCapitalShipWeaponsAlbedo.png' );
+            let metRough = this.loadTexture( '3d/ships/Textures/ScifiCapitalShipWeapons/MetRough.png' );
+            let normal = this.loadTexture( '3d/ships/Textures/ScifiCapitalShipWeapons/ScifiCapitalShipWeaponsNormal.png' );
+            let aoMap = this.loadTexture( '3d/ships/Textures/ScifiCapitalShipWeapons/ScifiCapitalShipWeaponsAlbedoAO.png' );
+            
+            G.materials.CapitalWeapons = new MeshStandardMaterial({
+                name: 'Weapons',
+                map: map,
+                aoMap: aoMap,
+                envMap: G.environmentMap,
+                roughnessMap: metRough,
+                roughness: 1,
+                metalnessMap: metRough,
+                metalness: 1,
+                normalMap: normal,
+            });  
         }
         if( ! G.materials.FighterWeapons ) {
             let map = this.loadTexture( '3d/ships/Textures/ScifiFighterModularWeapons/ScifiFighterModularWeaponsAlbedo.png' );
@@ -1176,8 +1229,8 @@ export class Ship {
                 this.dockedAt.getWorldQuaternion( quaternion );
                 this.ent.quaternion.copy( quaternion.clone() );
             }
+           
             const start = this.ent.position.clone();
-            
             this.ent.translateZ(1);
             let effect = new Vector3(
                 this.ent.position.x - start.x,
@@ -1187,9 +1240,9 @@ export class Ship {
             this.ent.position.copy( start.clone() );
             
             this.momentum.set(
-                this.momentum.x + ( this.setControls.throttle * G.delta * 100000 * effect.x ),
-                this.momentum.y + ( this.setControls.throttle * G.delta * 100000 * effect.y ),
-                this.momentum.z + ( this.setControls.throttle * G.delta * 100000 * effect.z ),
+                this.momentum.x + ( this.setControls.throttle * G.delta * 500000 * effect.x ),
+                this.momentum.y + ( this.setControls.throttle * G.delta * 500000 * effect.y ),
+                this.momentum.z + ( this.setControls.throttle * G.delta * 500000 * effect.z ),
             );
             
             this.ent.translateX(1);
@@ -1200,9 +1253,9 @@ export class Ship {
             );
             this.ent.position.copy( start.clone() );            
             this.momentum.set(
-                this.momentum.x + ( - this.setControls.slideHorizontal * G.delta * 10000 * effect.x ),
-                this.momentum.y + ( - this.setControls.slideHorizontal * G.delta * 10000 * effect.y ),
-                this.momentum.z + ( - this.setControls.slideHorizontal * G.delta * 10000 * effect.z ),
+                this.momentum.x + ( - this.setControls.slideHorizontal * G.delta * 20000 * effect.x ),
+                this.momentum.y + ( - this.setControls.slideHorizontal * G.delta * 20000 * effect.y ),
+                this.momentum.z + ( - this.setControls.slideHorizontal * G.delta * 20000 * effect.z ),
             );
 
             this.ent.translateY(1);
@@ -1213,9 +1266,9 @@ export class Ship {
             );
             this.ent.position.copy( start.clone() );            
             this.momentum.set(
-                this.momentum.x + ( this.setControls.slideVertical * G.delta * 10000 * effect.x ),
-                this.momentum.y + ( this.setControls.slideVertical * G.delta * 10000 * effect.y ),
-                this.momentum.z + ( this.setControls.slideVertical * G.delta * 10000 * effect.z ),
+                this.momentum.x + ( this.setControls.slideVertical * G.delta * 20000 * effect.x ),
+                this.momentum.y + ( this.setControls.slideVertical * G.delta * 20000 * effect.y ),
+                this.momentum.z + ( this.setControls.slideVertical * G.delta * 20000 * effect.z ),
             );
             
             for( let i=1 ; i<G.delta*100 ; i++ ) {
